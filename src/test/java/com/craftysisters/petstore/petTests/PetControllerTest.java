@@ -24,6 +24,7 @@
 package com.craftysisters.petstore.petTests;
 
 import com.craftysisters.petstore.base.BaseTest;
+import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -37,10 +38,41 @@ class PetControllerTest extends BaseTest {
     @Tag("getPet")
     @DisplayName("Should be able to hit the pet endpoint")
     void getPet() {
-        when().
-            get("/pet/1").
-        then().
-            statusCode(HttpStatus.SC_OK);
+        when()
+                .get("/pet","1")
+                .then()
+                .statusCode(HttpStatus.SC_OK);
         //.body("status", is("UP"));
+    }
+
+    @Test
+    @Tag("postPet")
+    @DisplayName("Should be able to create pet")
+    void postPet() {
+        RestAssured.given().accept("application/json").contentType("application/json").body("""
+                        {
+                          "id": 0,
+                          "category": {
+                            "id": 0,
+                            "name": "string"
+                          },
+                          "name": "doggie",
+                          "photoUrls": [
+                            "string"
+                          ],
+                          "tags": [
+                            {
+                              "id": 0,
+                              "name": "string"
+                            }
+                          ],
+                          "status": "available"
+                        }""")
+                .when()
+                .post("/pet")
+                .then()
+                .statusCode(HttpStatus.SC_OK);
+
+
     }
 }
