@@ -15,27 +15,7 @@ import static io.restassured.config.RestAssuredConfig.newConfig;
 @SpringBootTest
 class PetstoreApplicationTests {
 
-	protected static Configuration configuration;
 
-
-	@BeforeAll
-	public static void beforeAllTests() {
-		configuration = ConfigurationManager.getConfiguration();
-
-		RestAssured.baseURI = configuration.baseURI();
-		RestAssured.basePath = configuration.basePath();
-		RestAssured.port = configuration.port();
-
-		// solve the problem with big decimal assertions
-		RestAssured.config = newConfig().
-				
-				jsonConfig(jsonConfig().numberReturnType(JsonPathConfig.NumberReturnType.BIG_DECIMAL)).
-				sslConfig(new SSLConfig().allowAllHostnames());
-
-		RestAssured.useRelaxedHTTPSValidation();
-
-//        determineLog();
-	}
 	@Test
 	void contextLoads() {
 	}
