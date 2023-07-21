@@ -24,6 +24,8 @@
 package com.craftysisters.petstore.petTests;
 
 import com.craftysisters.petstore.base.BaseTest;
+import com.craftysisters.petstore.dto.PetDto;
+import com.craftysisters.petstore.dto.TagDto;
 import io.restassured.RestAssured;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.DisplayName;
@@ -49,25 +51,11 @@ class PetControllerTest extends BaseTest {
     @Tag("postPet")
     @DisplayName("Should be able to create pet")
     void postPet() {
-        RestAssured.given().accept("application/json").contentType("application/json").body("""
-                        {
-                          "id": 0,
-                          "category": {
-                            "id": 0,
-                            "name": "string"
-                          },
-                          "name": "doggie",
-                          "photoUrls": [
-                            "string"
-                          ],
-                          "tags": [
-                            {
-                              "id": 0,
-                              "name": "string"
-                            }
-                          ],
-                          "status": "available"
-                        }""")
+        PetDto pet = new PetDto();
+        pet.setName("Pipi");
+        pet.setStatus("unavailable");
+        pet.getTags().add(new TagDto(0, "amazing"));
+        RestAssured.given().accept("application/json").contentType("application/json").body(pet)
                 .when()
                 .post("/pet")
                 .then()
