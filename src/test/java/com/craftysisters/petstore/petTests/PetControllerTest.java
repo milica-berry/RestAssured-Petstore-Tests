@@ -27,7 +27,9 @@ import com.craftysisters.petstore.base.BaseTest;
 import com.craftysisters.petstore.dto.PetDto;
 import com.craftysisters.petstore.dto.TagDto;
 import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -41,7 +43,7 @@ class PetControllerTest extends BaseTest {
     @DisplayName("Should be able to hit the pet endpoint")
     void getPet() {
         when()
-                .get("/pet","1")
+                .get("/pet", "1")
                 .then()
                 .statusCode(HttpStatus.SC_OK);
         //.body("status", is("UP"));
@@ -51,15 +53,21 @@ class PetControllerTest extends BaseTest {
     @Tag("postPet")
     @DisplayName("Should be able to create pet")
     void postPet() {
-        PetDto pet = new PetDto();
-        pet.setName("Pipi");
-        pet.setStatus("unavailable");
-        pet.getTags().add(new TagDto(0, "amazing"));
-        RestAssured.given().accept("application/json").contentType("application/json").body(pet)
+        PetDto petRequest = new PetDto();
+        petRequest.setName("Pipi");
+        petRequest.setStatus("unavailable");
+        petRequest.getTags().add(new TagDto(0, "amazing"));
+        Response response = RestAssured.given().accept("application/json").contentType("application/json").body(petRequest)
                 .when()
-                .post("/pet")
-                .then()
+                .post("/pet");
+
+        response.then()
                 .statusCode(HttpStatus.SC_OK);
+
+        PetDto petResponse = response.as(PetDto.class);
+        Assertions.assertEquals(petRequest.getName(), petResponse.getName());
+        Assertions.assertNotNull(petResponse.getId());
+
 
 
     }

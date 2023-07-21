@@ -8,7 +8,7 @@ import java.util.List;
 
 @Data
 public class PetDto {
-    private long id;
+    private Long id;
     private Category category;
     private String name;
     private List<String> photoUrls;
