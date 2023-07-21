@@ -43,7 +43,7 @@ class PetControllerTest extends BaseTest {
     @DisplayName("Should be able to hit the pet endpoint")
     void getPet() {
         when()
-                .get("/pet", "1")
+                .get("/pet/{id}", 1)
                 .then()
                 .statusCode(HttpStatus.SC_OK);
         //.body("status", is("UP"));
