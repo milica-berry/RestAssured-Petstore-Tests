@@ -34,6 +34,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import static io.restassured.RestAssured.when;
 
 class PetControllerTest extends BaseTest {
@@ -68,7 +70,9 @@ class PetControllerTest extends BaseTest {
         Assertions.assertEquals(petRequest.getName(), petResponse.getName());
         Assertions.assertNotNull(petResponse.getId());
 
-
+        assertThat(petResponse).usingRecursiveComparison()
+                .ignoringFields("id", "tags")
+                .isEqualTo(petRequest);
 
     }
 }
