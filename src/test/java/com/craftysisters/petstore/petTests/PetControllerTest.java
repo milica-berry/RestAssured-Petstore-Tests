@@ -34,9 +34,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import static io.restassured.RestAssured.when;
+import static org.assertj.core.api.Assertions.assertThat;
 
 class PetControllerTest extends BaseTest {
 
@@ -63,6 +62,8 @@ class PetControllerTest extends BaseTest {
                 .when()
                 .post("/pet");
 
+
+
         response.then()
                 .statusCode(HttpStatus.SC_OK);
 
@@ -75,4 +76,40 @@ class PetControllerTest extends BaseTest {
                 .isEqualTo(petRequest);
 
     }
+
+    @Test
+    @Tag("getPetByStatus")
+    @DisplayName("Should be able to find pet by status")
+    void getPetByStatus() {
+
+        Response response = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .queryParam("status", "available")
+                .when()
+                .get("/pet/findByStatus");
+
+
+        PetDto[] petResponse = response.as(PetDto[].class);
+        PetDto[] petRequest = new PetDto[petResponse.length];
+
+        for (int i = 0; i < petRequest.length; i++) {
+            petRequest[i] = new PetDto();
+            petRequest[i].setStatus("available");
+        }
+
+
+
+        for (int i = 0; i < petResponse.length; i++) {
+            Assertions.assertEquals(petRequest[i].getStatus(), petResponse[i].getStatus());
+        }
+
+
+
+
+
+
+
+    }
+
 }
