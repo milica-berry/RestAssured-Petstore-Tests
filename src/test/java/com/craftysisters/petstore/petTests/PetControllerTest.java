@@ -81,7 +81,6 @@ class PetControllerTest extends BaseTest {
     @Tag("getPetByStatus")
     @DisplayName("Should be able to find pet by status")
     void getPetByStatus() {
-
         Response response = RestAssured.given()
                 .accept("application/json")
                 .contentType("application/json")
@@ -99,17 +98,40 @@ class PetControllerTest extends BaseTest {
         }
 
 
-
         for (int i = 0; i < petResponse.length; i++) {
             Assertions.assertEquals(petRequest[i].getStatus(), petResponse[i].getStatus());
         }
 
 
-
-
-
-
-
     }
+
+
+    @Test
+    @Tag("getPetById")
+    @DisplayName("Should find pet by id")
+    void getpetById(){
+        Response response = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .pathParam("id", "9223372036854775807")
+                .when()
+                .get("/pet/{id}");
+
+
+        Long id = Long.parseLong("9223372036854775807");
+
+        PetDto petRequest = new PetDto();
+        petRequest.setId(id);
+
+        PetDto petResponse = response.as(PetDto.class);
+        Assertions.assertEquals(petResponse.getId(), petRequest.getId());
+
+        assertThat(petResponse).usingRecursiveComparison()
+                .ignoringFields("id", "tags", "category", "name", "photoUrls", "status")
+                .isEqualTo(petRequest);
+    }
+
+
+
 
 }
