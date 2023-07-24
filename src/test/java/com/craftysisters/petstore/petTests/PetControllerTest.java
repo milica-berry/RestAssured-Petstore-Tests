@@ -55,14 +55,13 @@ class PetControllerTest extends BaseTest {
     @DisplayName("Should be able to create pet")
     void postPet() {
         PetDto petRequest = new PetDto();
+        Long id = Long.parseLong("444414444");
+        petRequest.setId(id);
         petRequest.setName("Pipi");
-        petRequest.setStatus("unavailable");
         petRequest.getTags().add(new TagDto(0, "amazing"));
         Response response = RestAssured.given().accept("application/json").contentType("application/json").body(petRequest)
                 .when()
                 .post("/pet");
-
-
 
         response.then()
                 .statusCode(HttpStatus.SC_OK);
@@ -102,7 +101,6 @@ class PetControllerTest extends BaseTest {
             Assertions.assertEquals(petRequest[i].getStatus(), petResponse[i].getStatus());
         }
 
-
     }
 
 
@@ -113,12 +111,12 @@ class PetControllerTest extends BaseTest {
         Response response = RestAssured.given()
                 .accept("application/json")
                 .contentType("application/json")
-                .pathParam("id", "9223372036854775807")
+                .pathParam("id", "444414444")
                 .when()
                 .get("/pet/{id}");
 
 
-        Long id = Long.parseLong("9223372036854775807");
+        Long id = Long.parseLong("444414444");
 
         PetDto petRequest = new PetDto();
         petRequest.setId(id);
@@ -127,8 +125,41 @@ class PetControllerTest extends BaseTest {
         Assertions.assertEquals(petResponse.getId(), petRequest.getId());
 
         assertThat(petResponse).usingRecursiveComparison()
-                .ignoringFields("id", "tags", "category", "name", "photoUrls", "status")
+                .ignoringFields("tags", "category", "name", "photoUrls", "status")
                 .isEqualTo(petRequest);
+    }
+
+    @Test
+    @Tag("updatePetById")
+    @DisplayName("Should be able to update pet using id")
+    void updatePetById(){
+        Long id = Long.parseLong("444414444");
+
+        PetDto petRequest = new PetDto();
+        petRequest.setId(id);
+        petRequest.setName("Maja");
+
+        Response response1 = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/x-www-form-urlencoded")
+                .pathParam("id", id)
+                .formParam("name", "Maja")
+                .when()
+                .post("/pet/{id}");
+
+        response1.then()
+                .statusCode(HttpStatus.SC_OK);
+
+        Response response2 = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .pathParam("id", id)
+                .when()
+                .get("/pet/{id}");
+
+        PetDto petResponse = response2.as(PetDto.class);
+        Assertions.assertEquals(petRequest.getName(), petResponse.getName());
+
     }
 
 
