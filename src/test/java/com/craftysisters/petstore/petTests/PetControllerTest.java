@@ -26,7 +26,10 @@ package com.craftysisters.petstore.petTests;
 import com.craftysisters.petstore.base.BaseTest;
 import com.craftysisters.petstore.dto.PetDto;
 import com.craftysisters.petstore.dto.TagDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.restassured.RestAssured;
+import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
@@ -34,17 +37,24 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static io.restassured.RestAssured.when;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class PetControllerTest extends BaseTest {
 
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Test
     @Tag("getPet")
     @DisplayName("Should be able to hit the pet endpoint")
-    void getPet() {
-        when()
-                .get("/pet/{id}", 1)
+    void getPet() throws JsonProcessingException {
+        Response response = when()
+                .get("/pet/{id}", 1);
+
+        objectMapper.readValue(response.toString(), PetDto.class);
+        response
                 .then()
                 .statusCode(HttpStatus.SC_OK);
         //.body("status", is("UP"));
@@ -87,18 +97,12 @@ class PetControllerTest extends BaseTest {
                 .when()
                 .get("/pet/findByStatus");
 
+        //Example of ObjectMapper
+        //List<PetDto> responseFromObjectMapper = objectMapper.readValue(response.asString(), new TypeReference<List<PetDto>>(){});
+        List<PetDto> petResponseList = response.as(new TypeRef<List<PetDto>>(){});
 
-        PetDto[] petResponse = response.as(PetDto[].class);
-        PetDto[] petRequest = new PetDto[petResponse.length];
-
-        for (int i = 0; i < petRequest.length; i++) {
-            petRequest[i] = new PetDto();
-            petRequest[i].setStatus("available");
-        }
-
-
-        for (int i = 0; i < petResponse.length; i++) {
-            Assertions.assertEquals(petRequest[i].getStatus(), petResponse[i].getStatus());
+        for (PetDto pet : petResponseList) {
+            Assertions.assertEquals(pet.getStatus(), "available");
         }
 
     }
