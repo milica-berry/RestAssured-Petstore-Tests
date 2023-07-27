@@ -32,11 +32,13 @@ import io.restassured.RestAssured;
 import io.restassured.common.mapper.TypeRef;
 import io.restassured.response.Response;
 import org.apache.http.HttpStatus;
+import org.apache.http.entity.ContentType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
 import java.util.List;
 
 import static io.restassured.RestAssured.when;
@@ -45,6 +47,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class PetControllerTest extends BaseTest {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private Long petId = Long.parseLong("444414444");
+
 
     @Test
     @Tag("getPet")
@@ -64,12 +68,16 @@ class PetControllerTest extends BaseTest {
     @Tag("postPet")
     @DisplayName("Should be able to create pet")
     void postPet() {
+
         PetDto petRequest = new PetDto();
-        Long id = Long.parseLong("444414444");
-        petRequest.setId(id);
+        petRequest.setId(petId);
         petRequest.setName("Pipi");
         petRequest.getTags().add(new TagDto(0, "amazing"));
-        Response response = RestAssured.given().accept("application/json").contentType("application/json").body(petRequest)
+
+        Response response = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .body(petRequest)
                 .when()
                 .post("/pet");
 
@@ -115,41 +123,38 @@ class PetControllerTest extends BaseTest {
         Response response = RestAssured.given()
                 .accept("application/json")
                 .contentType("application/json")
-                .pathParam("id", "444414444")
                 .when()
-                .get("/pet/{id}");
+                .get("/pet/{petId}", petId);
 
 
-        Long id = Long.parseLong("444414444");
-
-        PetDto petRequest = new PetDto();
-        petRequest.setId(id);
+        PetDto petExpected = new PetDto();
+        petExpected.setId(petId);
 
         PetDto petResponse = response.as(PetDto.class);
-        Assertions.assertEquals(petResponse.getId(), petRequest.getId());
+        Assertions.assertEquals(petResponse.getId(), petExpected.getId());
 
         assertThat(petResponse).usingRecursiveComparison()
                 .ignoringFields("tags", "category", "name", "photoUrls", "status")
-                .isEqualTo(petRequest);
+                .isEqualTo(petExpected);
     }
 
     @Test
     @Tag("updatePetById")
     @DisplayName("Should be able to update pet using id")
     void updatePetById(){
-        Long id = Long.parseLong("444414444");
 
-        PetDto petRequest = new PetDto();
-        petRequest.setId(id);
-        petRequest.setName("Maja");
+        PetDto petExpected = new PetDto();
+        petExpected.setId(petId);
+        petExpected.setName("Maja");
+        petExpected.setStatus("unavailable");
 
         Response response1 = RestAssured.given()
                 .accept("application/json")
                 .contentType("application/x-www-form-urlencoded")
-                .pathParam("id", id)
                 .formParam("name", "Maja")
+                .formParam("status", "unavailable")
                 .when()
-                .post("/pet/{id}");
+                .post("/pet/{petId}", petId);
 
         response1.then()
                 .statusCode(HttpStatus.SC_OK);
@@ -157,14 +162,91 @@ class PetControllerTest extends BaseTest {
         Response response2 = RestAssured.given()
                 .accept("application/json")
                 .contentType("application/json")
-                .pathParam("id", id)
                 .when()
-                .get("/pet/{id}");
+                .get("/pet/{petId}", petId);
 
         PetDto petResponse = response2.as(PetDto.class);
-        Assertions.assertEquals(petRequest.getName(), petResponse.getName());
+        Assertions.assertEquals(petExpected.getName(), petResponse.getName());
 
     }
+
+
+    @Test
+    @Tag("updatePet")
+    @DisplayName("Should be able to update pet")
+    void updatePet(){
+        PetDto petRequest = new PetDto();
+        petRequest.setId(petId);
+        petRequest.setName("Pipi");
+        petRequest.setStatus("available");
+
+        Response response = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .body(petRequest)
+                .when()
+                .put("/pet");
+
+        response.then()
+                .statusCode(HttpStatus.SC_OK);
+
+        PetDto petResponse = response.as(PetDto.class);
+        Assertions.assertEquals(petRequest.getName(), petResponse.getName());
+        Assertions.assertEquals(petRequest.getId(), petResponse.getId());
+        Assertions.assertEquals(petRequest.getStatus(), petResponse.getStatus());
+    }
+
+    @Test
+    @Tag("noIdUpdatePet")
+    @DisplayName("Shouldn't be able to update pet without id in body")
+    void updatePetWithoutId(){
+        PetDto petRequest = new PetDto();
+        petRequest.setName("Pipi");
+        petRequest.setStatus("available");
+
+        Response response = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .body(petRequest)
+                .when()
+                .put("/pet");
+
+        response.then()
+                .statusCode(HttpStatus.SC_BAD_REQUEST);
+    }
+
+    @Test
+    @Tag("uploadPetImage")
+    @DisplayName("Should be able to upload pet image")
+    void uploadImage(){
+        String filePath = "C:/Users/HP/Desktop/mouse.png";
+
+        File imageFile = new File(filePath);
+        Response response = RestAssured.given()
+                .multiPart("image", imageFile, ContentType.IMAGE_PNG.getMimeType())
+                .accept("application/json")
+                .contentType("multipart/form-data")
+                .when()
+                .post("/pet/{petId}/uploadImage", petId);
+
+        response.then().statusCode(HttpStatus.SC_OK);
+    }
+
+    @Test
+    @Tag("deletePet")
+    @DisplayName("Should be able to delete pet")
+    void deletePet(){
+        Response response = RestAssured.given()
+                .accept("application/json")
+                .contentType("application/json")
+                .when()
+                .delete("/pet/{petId}", petId);
+
+        response.then()
+                .statusCode(HttpStatus.SC_OK);
+    }
+
+
 
 
 
