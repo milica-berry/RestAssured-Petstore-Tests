@@ -9,6 +9,11 @@ import io.restassured.filter.log.ResponseLoggingFilter;
 import io.restassured.path.json.config.JsonPathConfig;
 import org.junit.jupiter.api.BeforeAll;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
+
 import static io.restassured.config.JsonConfig.jsonConfig;
 import static io.restassured.config.RestAssuredConfig.newConfig;
 
@@ -35,10 +40,28 @@ public class BaseTest {
 
         determineLog();
 
+
     }
 
     private static void determineLog() {
         RestAssured.filters(new RequestLoggingFilter(), new ResponseLoggingFilter());
 
+    }
+
+
+    public DateTimeFormatter formatter(){
+        DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                .appendFraction(ChronoField.MICRO_OF_SECOND, 0, 6, true)
+                .appendPattern("X")
+                .toFormatter();
+
+        return formatter;
+    }
+
+    public LocalDateTime formatLocalDateTime(String time){
+        LocalDateTime date = LocalDateTime.parse(time, formatter());
+
+        return date;
     }
 }
