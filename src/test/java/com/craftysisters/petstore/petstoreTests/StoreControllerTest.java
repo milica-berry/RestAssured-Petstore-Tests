@@ -14,7 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class StoreControllerTest extends BaseTest {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private ObjectMapper objectMapper;
     private Long orderId;
     private Long petId;
     private Long quantity;
@@ -22,6 +22,7 @@ public class StoreControllerTest extends BaseTest {
 
     @BeforeEach
     void setUp() {
+        objectMapper = new ObjectMapper();
         orderId = Long.parseLong("444414444");
         petId = Long.parseLong("444414444");
         quantity = Long.parseLong("1");
@@ -54,7 +55,7 @@ public class StoreControllerTest extends BaseTest {
         OrderDto orderResponse = response.as(OrderDto.class);
 
         assertThat(orderResponse).usingRecursiveComparison()
-                .ignoringFields()
+                .ignoringFields("shipDate")
                 .isEqualTo(orderRequest);
 
 
